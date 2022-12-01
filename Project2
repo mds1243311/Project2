@@ -1,0 +1,102 @@
+import org.jsoup.Jsoup;
+
+import java.util.Properties;
+import java.util.Scanner;
+import javax.swing.text.Document;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
+public class textAnalyzer {
+
+    private class Node {
+        String word;
+        int count;
+        public Node(String newWord) {
+            this.word = newWord;
+            this.count = 1;
+        }
+
+        public int getWordLength() {
+            return this.word.length();
+        }
+    }
+
+    LinkedList<Node> words;
+    ArrayList<String> avoidWords;
+    // add Queue for user input
+    public textAnalyzer() {
+        words = new LinkedList<Node>();
+        avoidWords = new ArrayList<String>();
+    }
+    public String getWebpageContent(String url) throws IOException{
+        Connection conn = (Connection) Jsoup.connect(url);
+        Document doc = conn.get();
+        String result = doc.body().text();
+        return result;
+    }
+    // get the avoid words
+    public void readTextFile(String fileName) throws IOException {
+        // here read the property file
+        // store in an arrayList
+        // if property file does not exist use default words
+//        FileReader fileReader = new FileReader(file);
+//        Scanner scan = new Scanner(file);
+//        avoidWords.add(scan.nextLine());
+        FileInputStream f = null;
+        Properties p = null;
+        try {
+            f = new FileInputStream(fileName);
+            p = new Properties();
+            p.load(f);
+            System.out.print(p.getProperty("avoid"));
+        } catch(Exception fn) {
+            avoidWords.add("a");
+            avoidWords.add("the");
+            avoidWords.add("i");
+            avoidWords.add("so");
+        } finally {
+            f.close();
+        }
+        //?
+    }
+    public void processContents(String s) {
+        // use .split to parse string s
+        String[] splitWords = s.split(" ");
+        // use regex to remove punctuation
+        // make text lowercase
+        int index;
+
+        for(String w : splitWords) {
+            // if w is in the avoid words arrayList continue
+            //
+            if(avoidWords.contains(w)) {
+                continue;
+            }
+            index = words.indexOf(w);
+            if(index==-1) {
+                words.add(new Node(w));
+            }else{
+                words.get(index).count++;
+            }
+        }
+        // store the words from the string in a doubly linked list
+
+        // count the words also stored in a doubly linked list
+    }
+    // add methods here
+    // for shortest summary, top 10 and longest
+    public static void main(String[] args) throws IOException {
+        /*
+         args[0] == url
+         call getWebPage content to get String with all the body's html text
+        */
+        // read text file
+        textAnalyzer t = new textAnalyzer();
+        String bodyText = t.getWebpageContent(args[0]);
+        t.readTextFile("myfile.prop"); // change filename later
+        t.processContents(bodyText);
+    }
+}
